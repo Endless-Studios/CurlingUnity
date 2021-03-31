@@ -9,6 +9,7 @@ public class Stone : MonoBehaviour {
 	public float freezeMotionVelocity = .1f;
 	public AnimationCurve CurlRatio;
 	public AnimationCurve[] CurlRatios;
+	private int directionOfRotation = 1;
 
 	private Rigidbody stoneRB;
 	private float[] weightTable;
@@ -17,31 +18,83 @@ public class Stone : MonoBehaviour {
 	private float hogToHogSecondsForRotation = 10f;
 	private bool isInMotionFreezeTest = false;
 	private float distanceSinceLaunch = 0f;
-	private int directionOfRotation = 1;
+	private GameObject targetRing;
 
+	public float InstantaneousVelocity
+    {
+		get
+        {
+			return stoneRB.velocity.z;
+        }
+    }
+
+	public int RotationDirection
+    {
+        get
+        {
+			return directionOfRotation;
+        }
+    }
+
+	public Vector3 Position
+    {
+        get
+        {
+			MeshCollider curColider = GetComponentInChildren<MeshCollider>();
+			return curColider.transform.position;
+        }
+    }
+
+	public Vector3 TargetPosition
+    {
+		get
+        {
+			Vector3 targetWorldspace = targetRing.transform.position;
+			return new Vector3(targetWorldspace.x, targetWorldspace.y, targetWorldspace.z);
+        }
+    }
+
+	public Vector3 ClosestPointToTarget
+    {
+        get
+        {
+			MeshCollider stoneCollider = this.GetComponentInChildren<MeshCollider>();
+			return stoneCollider.ClosestPoint(TargetPosition);
+		}
+    }
+
+	public float DistanceFromTarget
+	{
+		get
+		{
+			return Vector3.Distance(ClosestPointToTarget, TargetPosition);
+		}
+	}
 
 	// Use this for initialization
 	void Awake () {
 		stoneRB = this.GetComponentInChildren<Rigidbody> ();
 		PopulateWeightTable ();
+		targetRing = GameObject.FindGameObjectWithTag("CenterRing");
 	}
 
 	private void PopulateWeightTable()
 	{
-		weightTable = new float[13];
-		weightTable [0] = 1.73f;
-		weightTable [1] = 1.76f;
-		weightTable [2] = 1.8f;
-		weightTable [3] = 1.86f;
-		weightTable [4] = 1.88f;
-		weightTable [5] = 1.9f;
-		weightTable [6] = 1.91f;
-		weightTable [7] = 1.92f;
-		weightTable [8] = 1.94f;
-		weightTable [9] = 1.96f;
-		weightTable [10] = 1.98f;
-		weightTable [11] = 2.04f;
-		weightTable [12] = 3f;
+		weightTable = new float[14];
+		weightTable [0] = 1.73f; // hog
+		weightTable [1] = 1.76f; // high guard
+		weightTable [2] = 1.8f; // low guard
+		weightTable [3] = 1.86f; // 12 ft
+		weightTable [4] = 1.88f; // 10ft circle
+		weightTable [5] = 1.9f; // 8 ft
+		weightTable [6] = 1.91f; // 6 ft
+		weightTable [7] = 1.92f;  // 4 ft
+		weightTable [8] = 1.94f; // tee / button
+		weightTable [9] = 1.96f; // tee + 4
+		weightTable [10] = 1.98f; // tee + 8
+		weightTable [11] = 2.04f; // hack
+		weightTable [12] = 3f; // take out / normal
+		weightTable[13] = 5f; // peel
 
 
 	}
@@ -84,6 +137,7 @@ public class Stone : MonoBehaviour {
 			StopCoroutine ("MotionFreezeTest");
 		}
 	}
+
 
 	private bool stoneIsMoving()
 	{

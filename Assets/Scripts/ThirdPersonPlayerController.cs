@@ -27,7 +27,8 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	private LineRenderer virtualStoneLineRenderer;
 	private bool stoneConjuringMode = false;
     private StoneFollowCam stoneCam;
-	int spinDirection = 1;
+	private StoneStatsDisplayer statsDisplayer;
+	private int spinDirection = 1;
 
 	// Use this for initialization
 	void Start () {
@@ -41,6 +42,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		virtualStoneLineRenderer = virtualStoneLine.GetComponent<LineRenderer> ();
 		virtualStoneLineRenderer.enabled = false;
         stoneCam = hogCamera.GetComponent<StoneFollowCam>();
+		statsDisplayer = FindObjectOfType<StoneStatsDisplayer>();
 	}
 
 	void RenderDirectionLine() {
@@ -77,15 +79,25 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 	void ProcessConjuring()
 	{
-
-		if (Input.GetKeyDown (KeyCode.Space)) {
+		string overrideText;
+		if (Input.GetKeyDown (KeyCode.Space) && crouched) {
 
 			stoneConjuringMode = !stoneConjuringMode;
             if (stoneConjuringMode)
             {
                 //Debug.Log("Conjuring set camera to hog");
                 stoneCam.ReturnCameraToHog();
-            }
+				
+				if (spinDirection > 0)
+				{
+					overrideText = "Spin Direction: inner";
+				}
+				else
+				{
+					overrideText = "Spin Direction: outer";
+				}
+				statsDisplayer.OverrideDisplayText(overrideText);
+			}
 
 		}
 
@@ -96,14 +108,30 @@ public class ThirdPersonPlayerController : MonoBehaviour {
             
 			if (Input.GetKeyDown(KeyCode.I)) {
 				spinDirection = -1 * spinDirection;
+				if (spinDirection > 0)
+				{
+					overrideText = "Spin Direction: inner";
+				}
+				else
+				{
+					overrideText = "Spin Direction: outer";
+				}
+				statsDisplayer.OverrideDisplayText(overrideText);
 			}
 
 			if (Input.GetKeyDown (KeyCode.Period)) {
-				DropStone ();
+				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 			}
+
+            if (Input.GetKeyDown(KeyCode.Delete))
+            {
+				DestroyAllStones();
+            }
 
 			if (Input.GetKeyDown(KeyCode.Alpha1)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (0, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -111,6 +139,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha2)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (1, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -118,6 +147,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha3)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (2, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -125,6 +155,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha4)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (3, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -132,6 +163,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha5)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (4, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -139,6 +171,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha6)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (5, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -146,6 +179,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha7)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (6, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -153,6 +187,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha8)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (7, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -160,6 +195,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha9)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (8, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -167,6 +203,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Alpha0)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (9, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -174,6 +211,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Minus)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (10, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -181,6 +219,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.H)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (11, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -188,10 +227,20 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.T)) {
 				GameObject droppedStone = DropStone ();
+				statsDisplayer.TrackStone(droppedStone);
 				droppedStone.GetComponent<Stone> ().Launch (12, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
             }
+
+			if (Input.GetKeyDown(KeyCode.P))
+			{
+				GameObject droppedStone = DropStone();
+				statsDisplayer.TrackStone(droppedStone);
+				droppedStone.GetComponent<Stone>().Launch(13, this.gameObject.transform.forward, spinDirection);
+				StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+			}
 
 		} else {
 			virtualStoneObject.GetComponentInChildren<MeshRenderer> ().enabled = false;
@@ -225,7 +274,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	void Update() {
 
 		//Handle crouching
-		if (Input.GetKeyDown(KeyCode.C) && !cameraScript.freeLook) {
+		if (Input.GetKeyDown(KeyCode.C) && !cameraScript.freeLook && !stoneConjuringMode) {
 			actions.Sitting ();
 			crouched = !crouched;
 			if (crouched) {
@@ -250,9 +299,9 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		if (!cameraScript.freeLook) {
 			//Avatar facing direction control
 			float sensitivityScale = 1f;
-			if (Input.GetKey(KeyCode.LeftShift))
+			if (Input.GetKey(KeyCode.LeftControl))
             {
-				sensitivityScale = sensitivityScale * highSensitivityScalingFactor;
+				sensitivityScale *= highSensitivityScalingFactor;
             }
 			rb.AddTorque (0, Input.GetAxis ("Mouse X") * rotationalSensitivity * sensitivityScale, 0);
 		}
@@ -302,5 +351,14 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	{
 		return Instantiate (curlingStoneObject, virtualStoneObject.transform.position, this.gameObject.transform.rotation);
 	}
+
+	private void DestroyAllStones()
+    {
+		GameObject[] AllStones = GameObject.FindGameObjectsWithTag("Stone");
+        foreach (GameObject item in AllStones)
+        {
+			GameObject.Destroy(item);
+        }
+    }
 
 }
