@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class ThirdPersonPlayerController : MonoBehaviour {
 
     public float accelerationFactor = 70f;
@@ -76,6 +77,24 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		camera.transform.localRotation = oldCameraRotation;
 	}
 
+	void ProcessTimescale()
+    {
+        switch (Time.timeScale)
+        {
+			case 1f:
+				Time.timeScale = 2f;
+				break;
+			case 2f:
+				Time.timeScale = 4f;
+				break;
+			case 4f:
+				Time.timeScale = 1f;
+				break;
+			default:
+                break;
+        }
+    }
+
 	void ManageFreeLook()
 	{
 		if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt)) {
@@ -97,18 +116,19 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		overrideText = "Stone Color: " + nextStoneColor.ToString() + System.Environment.NewLine;
 		if (spinDirection > 0)
 		{
-			overrideText += "Spin Direction: inner";
+			overrideText += "Curl Direction: right";
 		}
 		else
 		{
-			overrideText += "Spin Direction: outer";
+			overrideText += "Curl Direction: left";
 		}
+		overrideText += System.Environment.NewLine;
+		overrideText += "Timescale: " + System.Math.Round(Time.timeScale, 0) + "x";
 		statsDisplayer.OverrideDisplayText(overrideText);
 	}
 
 	void ProcessConjuring()
 	{
-		string overrideText;
 		if (Input.GetKeyDown (KeyCode.Space) && crouched) {
 
 			stoneConjuringMode = !stoneConjuringMode;
@@ -156,6 +176,12 @@ public class ThirdPersonPlayerController : MonoBehaviour {
             if (Input.GetKeyDown(KeyCode.Delete))
             {
 				DestroyAllStones();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Quote))
+            {
+				ProcessTimescale();
+				OverrideNextStoneDisplayText();
             }
 
 			if (Input.GetKeyDown(KeyCode.Alpha1)) {
@@ -266,11 +292,21 @@ public class ThirdPersonPlayerController : MonoBehaviour {
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
             }
 
+			if (Input.GetKeyDown(KeyCode.B))
+			{
+				GameObject droppedStone = DropStone();
+				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+				statsDisplayer.TrackStone(droppedStone);
+				droppedStone.GetComponent<Stone>().Launch(12, this.gameObject.transform.forward, spinDirection);
+				StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+			}
+
 			if (Input.GetKeyDown(KeyCode.T)) {
 				GameObject droppedStone = DropStone ();
 				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
 				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (12, this.gameObject.transform.forward, spinDirection);
+				droppedStone.GetComponent<Stone> ().Launch (13, this.gameObject.transform.forward, spinDirection);
                 StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
                 StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
             }
@@ -280,7 +316,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 				GameObject droppedStone = DropStone();
 				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
 				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone>().Launch(13, this.gameObject.transform.forward, spinDirection);
+				droppedStone.GetComponent<Stone>().Launch(14, this.gameObject.transform.forward, spinDirection);
 				StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
 				StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
 			}
@@ -354,7 +390,17 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 				sensitivityScale *= highSensitivityScalingFactor;
             }
 			rb.AddTorque (0, Input.GetAxis ("Mouse X") * rotationalSensitivity * sensitivityScale, 0);
+            if (Input.GetKey(KeyCode.RightArrow))
+            {
+				rb.AddTorque(0, 10, 0);
+            }
+			if (Input.GetKey(KeyCode.LeftArrow))
+			{
+				rb.AddTorque(0, -10, 0);
+			}
 		}
+
+
 
 		//Process WASD movement
 		if (Input.GetKey(KeyCode.W) && !cameraScript.freeLook) {

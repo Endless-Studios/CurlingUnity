@@ -119,7 +119,7 @@ public class Stone : MonoBehaviour {
 
 	private void PopulateWeightTable()
 	{
-		weightTable = new float[14];
+		weightTable = new float[15];
 		weightTable [0] = 1.73f; // hog
 		weightTable [1] = 1.76f; // high guard
 		weightTable [2] = 1.8f; // low guard
@@ -132,8 +132,9 @@ public class Stone : MonoBehaviour {
 		weightTable [9] = 1.96f; // tee + 4
 		weightTable [10] = 1.98f; // tee + 8
 		weightTable [11] = 2.04f; // hack
-		weightTable [12] = 3f; // take out / normal
-		weightTable[13] = 5f; // peel
+		weightTable [12] = 2.1f; // board
+		weightTable [13] = 3f; // take out / normal
+		weightTable [14] = 5f; // peel
 
 
 	}

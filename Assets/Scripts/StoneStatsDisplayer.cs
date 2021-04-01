@@ -11,6 +11,8 @@ public class StoneStatsDisplayer : MonoBehaviour
 
     private Stone stone;
     private Text text;
+    private bool showTrails = true;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,15 +30,16 @@ public class StoneStatsDisplayer : MonoBehaviour
 
     string FormatStatsString()
     {
-        string statsString = "Spin Direction: ";
+        string statsString = "Curl Direction: ";
         if (stone.RotationDirection > 0)
         {
-            statsString += "inner" + Environment.NewLine;
+            statsString += "right" + Environment.NewLine;
         }
         else
         {
-            statsString += "outer" + Environment.NewLine;
+            statsString += "left" + Environment.NewLine;
         }
+        statsString += "Timescale: " + System.Math.Round(Time.timeScale, 0) + "x" + Environment.NewLine;
         statsString += "Velocity: " + System.Math.Round(Mathf.Abs(stone.InstantaneousVelocity), 2) + Environment.NewLine;
         statsString += "Stone Center Position: " + System.Math.Round(stone.Position.x, 2) + ", " + System.Math.Round(stone.Position.y, 2) + ", " + System.Math.Round(stone.Position.z, 2) + Environment.NewLine;
         statsString += "Target Position: " + System.Math.Round(stone.TargetPosition.x, 2) + ", " + System.Math.Round(stone.TargetPosition.y, 2) + ", " + System.Math.Round(stone.TargetPosition.z, 2) + Environment.NewLine;
@@ -50,6 +53,8 @@ public class StoneStatsDisplayer : MonoBehaviour
     {
         stoneObject = stoneToTrack;
         stone = stoneObject.GetComponent<Stone>();
+        TrailRenderer stoneTrail = stoneObject.GetComponentInChildren<TrailRenderer>();
+        stoneTrail.enabled = showTrails;
     }
 
     public void DetachStone()
@@ -65,10 +70,11 @@ public class StoneStatsDisplayer : MonoBehaviour
 
     public void ToggleStoneTrails()
     {
+        showTrails = !showTrails;
         TrailRenderer[] allTrails = FindObjectsOfType<TrailRenderer>();
         foreach (TrailRenderer item in allTrails)
         {
-            item.enabled = !item.enabled;
+            item.enabled = showTrails;
         }
     }
 }
