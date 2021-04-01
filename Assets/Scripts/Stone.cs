@@ -2,9 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum StoneColor
+{
+	Yellow,
+	Red
+}
+
 public class Stone : MonoBehaviour {
 
-
+	public StoneColor stoneColor = StoneColor.Yellow;
 	public float freezeMotionAfterSeconds = .2f;
 	public float freezeMotionVelocity = .1f;
 	public AnimationCurve CurlRatio;
@@ -74,11 +80,42 @@ public class Stone : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	void Awake () {
+	void Awake () 
+	{
 		stoneRB = this.GetComponentInChildren<Rigidbody> ();
 		PopulateWeightTable ();
 		targetRing = GameObject.FindGameObjectWithTag("CenterRing");
+		SetStoneColorVisuals();
 	}
+
+	public void SetStoneColor(StoneColor desiredColor)
+    {
+		stoneColor = desiredColor;
+		SetStoneColorVisuals();
+    }
+
+	private void SetStoneColorVisuals()
+    {
+		TrailRenderer stoneTrailRenderer = GetComponentInChildren<TrailRenderer>();
+		MeshRenderer[] handleCandidates = this.gameObject.GetComponentsInChildren<MeshRenderer>();
+		MeshRenderer handle = null;
+        foreach (MeshRenderer item in handleCandidates)
+        {
+            if (item.gameObject.CompareTag("StoneHandle"))
+            {
+				handle = item;
+				break;
+            }
+        }
+		Color targetColor = Color.yellow;
+        if (stoneColor == StoneColor.Red)
+        {
+			targetColor = Color.red;
+        }
+		stoneTrailRenderer.startColor = targetColor;
+		stoneTrailRenderer.endColor = targetColor;
+		handle.materials[3].color = targetColor;
+    }
 
 	private void PopulateWeightTable()
 	{

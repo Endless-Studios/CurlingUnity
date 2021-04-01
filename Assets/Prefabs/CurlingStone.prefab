@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 33934480676829554}
   - component: {fileID: 23476779887415598}
   m_Layer: 0
-  m_Name: Component#2
-  m_TagString: Untagged
+  m_Name: Handle
+  m_TagString: StoneHandle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -124,6 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddf7eec419ef16744a3e5c5cfa5cd3a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stoneColor: 0
   freezeMotionAfterSeconds: 0.5
   freezeMotionVelocity: 0.1
   CurlRatio:
