@@ -28,6 +28,10 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	private bool stoneConjuringMode = false;
     private StoneFollowCam stoneCam;
 	private StoneStatsDisplayer statsDisplayer;
+	private GameObject debugUI;
+	private GameObject crouchUI;
+	private GameObject summoningUI;
+	private GameObject stoneStatsUI;
 	private int spinDirection = 1;
 
 	// Use this for initialization
@@ -43,6 +47,14 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		virtualStoneLineRenderer.enabled = false;
         stoneCam = hogCamera.GetComponent<StoneFollowCam>();
 		statsDisplayer = FindObjectOfType<StoneStatsDisplayer>();
+		debugUI = GameObject.FindGameObjectWithTag("DebugUI");
+		crouchUI = GameObject.FindGameObjectWithTag("CrouchControls");
+		summoningUI = GameObject.FindGameObjectWithTag("SummoningControls");
+		stoneStatsUI = GameObject.FindGameObjectWithTag("StoneStatsControls");
+		debugUI.SetActive(false);
+		crouchUI.SetActive(false);
+		summoningUI.SetActive(false);
+		stoneStatsUI.SetActive(false);
 	}
 
 	void RenderDirectionLine() {
@@ -83,6 +95,8 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Space) && crouched) {
 
 			stoneConjuringMode = !stoneConjuringMode;
+			summoningUI.SetActive(!summoningUI.activeSelf);
+			stoneStatsUI.SetActive(!stoneStatsUI.activeSelf);
             if (stoneConjuringMode)
             {
                 //Debug.Log("Conjuring set camera to hog");
@@ -108,6 +122,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
             
 			if (Input.GetKeyDown(KeyCode.I)) {
 				spinDirection = -1 * spinDirection;
+				statsDisplayer.DetachStone();
 				if (spinDirection > 0)
 				{
 					overrideText = "Spin Direction: inner";
@@ -273,10 +288,17 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 	void Update() {
 
+        //Handle displaying debug UI
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+			debugUI.SetActive(!debugUI.activeSelf);
+        }
+
 		//Handle crouching
 		if (Input.GetKeyDown(KeyCode.C) && !cameraScript.freeLook && !stoneConjuringMode) {
 			actions.Sitting ();
 			crouched = !crouched;
+			crouchUI.SetActive(!crouchUI.activeSelf);
 			if (crouched) {
 				moveSpeed = accelerationFactor * percentTopSpeedCrouched;
 			} else {

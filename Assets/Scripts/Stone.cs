@@ -19,6 +19,8 @@ public class Stone : MonoBehaviour {
 	private bool isInMotionFreezeTest = false;
 	private float distanceSinceLaunch = 0f;
 	private GameObject targetRing;
+	private Vector3 launchPosition;
+	private Vector3 launchForce;
 
 	public float InstantaneousVelocity
     {
@@ -101,6 +103,8 @@ public class Stone : MonoBehaviour {
 	
 	private void LaunchInstant(Vector3 instantForce, int rotationDirection = 1)
 	{
+		launchPosition = this.transform.position;
+		launchForce = instantForce;
 		stoneRB.velocity = Vector3.zero;
 		directionOfRotation = rotationDirection;
 		stoneRB.AddForce (instantForce, ForceMode.VelocityChange);
@@ -124,6 +128,18 @@ public class Stone : MonoBehaviour {
 	{
 		LaunchInstant (direction * weightTable [weightIndex], rotationDirection);
 	}
+
+	public float TotalDeflection
+    {
+        get
+        {
+			Vector3 normalizedCourse = launchForce.normalized;
+			Vector3 lhs = this.Position - launchPosition;
+			float dotP = Vector3.Dot(lhs, normalizedCourse);
+			Vector3 nearestPoint = launchPosition + normalizedCourse * dotP;
+			return Vector3.Distance(this.Position, nearestPoint);
+        }
+    }
 
 	void FixedUpdate()
 	{

@@ -7,6 +7,10 @@ TagManager:
   - Wall
   - Stone
   - CenterRing
+  - DebugUI
+  - CrouchControls
+  - SummoningControls
+  - StoneStatsControls
   layers:
   - Default
   - TransparentFX
