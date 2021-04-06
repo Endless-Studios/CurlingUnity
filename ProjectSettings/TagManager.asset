@@ -12,6 +12,8 @@ TagManager:
   - SummoningControls
   - StoneStatsControls
   - StoneHandle
+  - AccuracyMeter
+  - StatusDisplay
   layers:
   - Default
   - TransparentFX

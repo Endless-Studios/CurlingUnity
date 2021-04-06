@@ -62,6 +62,14 @@ public class Stone : MonoBehaviour {
         }
     }
 
+	public float[] WeightTable
+    {
+        get 
+		{
+			return weightTable;
+		}
+    }
+
 	public Vector3 ClosestPointToTarget
     {
         get

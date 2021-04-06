@@ -11,6 +11,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	public float rotationalSensitivity = 30f;
 	public float highSensitivityScalingFactor = .5f;
 	public float percentTopSpeedCrouched = .7f;
+	public float autoTurnTime = 1f;
 	public Camera camera;
 	public GameObject curlingStoneObject;
 	public GameObject virtualStoneObject;
@@ -35,6 +36,13 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	private GameObject summoningUI;
 	private GameObject stoneStatsUI;
 	private int spinDirection = 1;
+	private Vector3 launchPosition;
+	private Quaternion launchRotation;
+	private bool inAutomove = false;
+	private AccuracyMeter accuracyMeter;
+	private bool inRealThrow = false;
+	private UnityEngine.UI.Text statusDisplay;
+	private List<KeyCode> weightKeyCodes;
 
 	// Use this for initialization
 	void Start () {
@@ -57,7 +65,95 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		crouchUI.SetActive(false);
 		summoningUI.SetActive(false);
 		stoneStatsUI.SetActive(false);
+		launchPosition = this.gameObject.transform.position;
+		launchRotation = this.gameObject.transform.rotation;
+		accuracyMeter = GameObject.FindGameObjectWithTag("AccuracyMeter").GetComponent<AccuracyMeter>();
+		statusDisplay = GameObject.FindGameObjectWithTag("StatusDisplay").GetComponent<UnityEngine.UI.Text>();
+		statusDisplay.enabled = false;
+		weightKeyCodes = new List<KeyCode>();
+		PopulateWeightKeyCodes();
 	}
+
+	private void PopulateWeightKeyCodes()
+    {
+		weightKeyCodes.Add(KeyCode.Alpha1);
+		weightKeyCodes.Add(KeyCode.Alpha2);
+		weightKeyCodes.Add(KeyCode.Alpha3);
+		weightKeyCodes.Add(KeyCode.Alpha4);
+		weightKeyCodes.Add(KeyCode.Alpha5);
+		weightKeyCodes.Add(KeyCode.Alpha6);
+		weightKeyCodes.Add(KeyCode.Alpha7);
+		weightKeyCodes.Add(KeyCode.Alpha8);
+		weightKeyCodes.Add(KeyCode.Alpha9);
+		weightKeyCodes.Add(KeyCode.Alpha0);
+		weightKeyCodes.Add(KeyCode.Minus);
+		weightKeyCodes.Add(KeyCode.H);
+		weightKeyCodes.Add(KeyCode.B);
+		weightKeyCodes.Add(KeyCode.T);
+		weightKeyCodes.Add(KeyCode.P);
+	}
+
+	private KeyCode GetWeightKeycode()
+    {
+        foreach (KeyCode item in weightKeyCodes)
+        {
+            if (Input.GetKey(item))
+            {
+				return item;
+            }
+        }
+		return KeyCode.None;
+    }
+
+	private IEnumerator RunToLaunchPosition()
+    {
+		inAutomove = true;
+		Vector3 startPosition = this.gameObject.transform.position;
+		Vector3 relativePosition = -(this.gameObject.transform.position - launchPosition);
+		Quaternion startRotation = this.gameObject.transform.rotation;
+		Quaternion walkToRotation = Quaternion.LookRotation(relativePosition);
+		float distanceToLaunch = Vector3.Distance(this.gameObject.transform.position, launchPosition);
+		float timeToTraverse = distanceToLaunch / maxAllowedSpeed;
+		float elapsedTime = 0f;
+		Vector3 newPosition;
+		Quaternion newRotation;
+		//actions.Walk();
+        while (elapsedTime < autoTurnTime)
+        {
+			elapsedTime += Time.deltaTime;
+			newRotation = Quaternion.Lerp(startRotation, walkToRotation, elapsedTime / autoTurnTime);
+			rb.MoveRotation(newRotation);
+			yield return new WaitForEndOfFrame();
+        }
+		elapsedTime = 0f;
+		//actions.Run();
+		while (elapsedTime < timeToTraverse)
+        {
+			elapsedTime += Time.deltaTime;
+			newPosition = Vector3.Lerp(startPosition, launchPosition, elapsedTime / timeToTraverse);
+			newPosition = new Vector3(newPosition.x, this.gameObject.transform.position.y, newPosition.z);
+			rb.MovePosition(newPosition);
+			yield return new WaitForEndOfFrame();
+        }
+		elapsedTime = 0f;
+		startRotation = this.transform.rotation;
+		//actions.Walk();
+		while (elapsedTime < autoTurnTime)
+        {
+			elapsedTime += Time.deltaTime;
+			newRotation = Quaternion.Lerp(startRotation, launchRotation, elapsedTime / autoTurnTime);
+			rb.MoveRotation(newRotation);
+			yield return new WaitForEndOfFrame();
+		}
+		//actions.Stay();
+		inAutomove = false;
+    }
+
+	private void DisplayStatus(string textToDisplay)
+    {
+		statusDisplay.text = textToDisplay;
+		statusDisplay.enabled = true;
+    }
 
 	void RenderDirectionLine() {
 
@@ -127,6 +223,166 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		statsDisplayer.OverrideDisplayText(overrideText);
 	}
 
+	private float getWeightByKeycode(KeyCode weightKeyCode)
+    {
+		Stone referenceStone = curlingStoneObject.GetComponent<Stone>();
+		float[] weightTable = referenceStone.WeightTable;
+
+		if (weightKeyCode == KeyCode.Alpha1)
+		{
+			return weightTable[0];
+		}
+		if (weightKeyCode == KeyCode.Alpha2)
+		{
+			return weightTable[1];
+		}
+		if (weightKeyCode == KeyCode.Alpha3)
+		{
+			return weightTable[2];
+		}
+		if (weightKeyCode == KeyCode.Alpha4)
+		{
+			return weightTable[3];
+		}
+		if (weightKeyCode == KeyCode.Alpha5)
+		{
+			return weightTable[4];
+		}
+		if (weightKeyCode == KeyCode.Alpha6)
+		{
+			return weightTable[5];
+		}
+		if (weightKeyCode == KeyCode.Alpha7)
+		{
+			return weightTable[6];
+		}
+		if (weightKeyCode == KeyCode.Alpha8)
+		{
+			return weightTable[7];
+		}
+		if (weightKeyCode == KeyCode.Alpha9)
+		{
+			return weightTable[8];
+		}
+		if (weightKeyCode == KeyCode.Alpha0)
+		{
+			return weightTable[9];
+		}
+		if (weightKeyCode == KeyCode.Minus)
+		{
+			return weightTable[10];
+		}
+		if (weightKeyCode == KeyCode.H)
+		{
+			return weightTable[11];
+		}
+		if (weightKeyCode == KeyCode.B)
+		{
+			return weightTable[12];
+		}
+		if (weightKeyCode == KeyCode.T)
+		{
+			return weightTable[13];
+		}
+		if (weightKeyCode == KeyCode.P)
+		{
+			return weightTable[14];
+		}
+		return 0f;
+
+    }
+
+	private IEnumerator ProcessRealThrow()
+    {
+		inRealThrow = true;
+		inAutomove = true;
+		crouched = true;
+		float intendedWeight = 0f;
+		bool isWeighted = false;
+		bool isWeightAcc = false;
+		bool isAimAcc = false;
+		DisplayStatus("Select shot weight");
+        yield return new WaitForEndOfFrame();
+        while (!isWeighted)
+        {
+			KeyCode returnedCode = KeyCode.None;
+			if (inRealThrow && GetWeightKeycode() != KeyCode.None)
+            {
+				intendedWeight = getWeightByKeycode(returnedCode);
+				DisplayStatus("Intended weight is " + intendedWeight.ToString() + ". Click to set weight accuracy.");
+				isWeighted = true;
+            }
+            else
+            {
+				yield return new WaitForEndOfFrame();
+            }
+        }
+		accuracyMeter.SetTargetValue(.5f);
+		accuracyMeter.StartCursorCycle();
+		float weightAccuracyMultiplier = 1f;
+		yield return new WaitForEndOfFrame();
+        while (!isWeightAcc)
+        {
+            if (Input.GetMouseButton(0) && inRealThrow)
+            {
+				accuracyMeter.StopCursorCycle();
+				weightAccuracyMultiplier = accuracyMeter.GetCursorPercentageOfTarget();
+				intendedWeight *= weightAccuracyMultiplier;
+				DisplayStatus("Weight accuracy was " + weightAccuracyMultiplier.ToString() + ". Click to set aim accuracy.");
+				yield return new WaitForSeconds(1f);
+				isWeightAcc = true;
+            }
+			else
+            {
+				yield return new WaitForEndOfFrame();
+            }
+        }
+		accuracyMeter.StartCursorCycle();
+		float aimAccuracyMultiplier = 0f;
+		yield return new WaitForEndOfFrame();
+        while (!isAimAcc)
+        {
+			if (Input.GetMouseButton(0) && inRealThrow)
+			{
+				accuracyMeter.StopCursorCycle();
+				aimAccuracyMultiplier = accuracyMeter.GetCursorPercentageOfDeviationFromTarget();
+				rb.MoveRotation(CalculateDeviatedAimRotation(aimAccuracyMultiplier));
+				DisplayStatus("Aim deviation was " + aimAccuracyMultiplier.ToString() + ". Launching!");
+				yield return new WaitForSeconds(1f);
+				isAimAcc = true;
+			}
+			else
+			{
+				yield return new WaitForEndOfFrame();
+			}
+		}
+		LaunchStoneByRawWeight(intendedWeight);
+		crouched = false;
+		inAutomove = false;
+		inRealThrow = false;
+    }
+
+	private Quaternion CalculateDeviatedAimRotation(float aimDeviation)
+    {
+		Quaternion currentAim = this.transform.rotation;
+		float deflectionValue = currentAim.eulerAngles.y * aimDeviation;
+		//for debugging
+		deflectionValue = 0f;
+		Quaternion newAim = new Quaternion();
+		newAim = Quaternion.Euler(currentAim.eulerAngles.x, currentAim.eulerAngles.y + deflectionValue, currentAim.eulerAngles.z);
+		return newAim;
+    }
+
+	private void LaunchStoneByRawWeight(float rawLaunchWeight)
+    {
+		GameObject droppedStone = DropStone();
+		droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+		statsDisplayer.TrackStone(droppedStone);
+		droppedStone.GetComponent<Stone>().Launch(rawLaunchWeight, this.transform.forward, spinDirection);
+		StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+		StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+	}
+
 	void ProcessConjuring()
 	{
 		if (Input.GetKeyDown (KeyCode.Space) && crouched) {
@@ -184,144 +440,167 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 				OverrideNextStoneDisplayText();
             }
 
-			if (Input.GetKeyDown(KeyCode.Alpha1)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (0, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-			}
-
-			if (Input.GetKeyDown(KeyCode.Alpha2)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (1, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+            if (Input.GetKeyDown(KeyCode.Z) && !inRealThrow)
+            {
+				StopCoroutine("ProcesRealThrow");
+				StartCoroutine("ProcessRealThrow");
             }
 
-			if (Input.GetKeyDown(KeyCode.Alpha3)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (2, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Alpha4)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (3, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Alpha5)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (4, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Alpha6)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (5, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Alpha7)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (6, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Alpha8)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (7, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Alpha9)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (8, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Alpha0)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (9, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.Minus)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (10, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.H)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (11, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.B))
+			if (!inRealThrow && GetWeightKeycode() != KeyCode.None)
 			{
-				GameObject droppedStone = DropStone();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone>().Launch(12, this.gameObject.transform.forward, spinDirection);
-				StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-				StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				if (Input.GetKeyDown(KeyCode.Alpha1))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(0, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha2))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(1, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha3))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(2, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha4))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(3, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha5))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(4, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha6))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(5, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha7))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(6, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha8))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(7, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha9))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(8, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Alpha0))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(9, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.Minus))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(10, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.H))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(11, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.B))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(12, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.T))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(13, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
+
+				if (Input.GetKeyDown(KeyCode.P))
+				{
+					GameObject droppedStone = DropStone();
+					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
+					statsDisplayer.TrackStone(droppedStone);
+					droppedStone.GetComponent<Stone>().Launch(14, this.gameObject.transform.forward, spinDirection);
+					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+				}
 			}
 
-			if (Input.GetKeyDown(KeyCode.T)) {
-				GameObject droppedStone = DropStone ();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone> ().Launch (13, this.gameObject.transform.forward, spinDirection);
-                StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-                StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-            }
-
-			if (Input.GetKeyDown(KeyCode.P))
-			{
-				GameObject droppedStone = DropStone();
-				droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
-				statsDisplayer.TrackStone(droppedStone);
-				droppedStone.GetComponent<Stone>().Launch(14, this.gameObject.transform.forward, spinDirection);
-				StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-				StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
-			}
-
-		} else {
+		} else 
+		{
 			virtualStoneObject.GetComponentInChildren<MeshRenderer> ().enabled = false;
 			virtualStoneLineRenderer.enabled = false;
 		}
@@ -329,7 +608,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 	void ProcessMoveAnimations()
 	{
-		if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) {
+		if (((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) & !inAutomove) || inAutomove) {
 
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) {
 				actions.Run();
@@ -359,7 +638,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
         }
 
 		//Handle crouching
-		if (Input.GetKeyDown(KeyCode.C) && !cameraScript.freeLook && !stoneConjuringMode) {
+		if (Input.GetKeyDown(KeyCode.C) && !cameraScript.freeLook && !stoneConjuringMode && !inAutomove) {
 			actions.Sitting ();
 			crouched = !crouched;
 			crouchUI.SetActive(!crouchUI.activeSelf);
@@ -370,6 +649,23 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 			}
 			return;
 		}
+
+		//Handle return to launch
+		if (Input.GetKeyDown(KeyCode.L) && !inAutomove)
+		{
+			float curDistanceToLaunch = Mathf.Abs(Vector3.Distance(this.transform.position, launchPosition));
+			if (curDistanceToLaunch > .5f)
+			{
+				StopCoroutine("RunToLaunchPosition");
+				StartCoroutine("RunToLaunchPosition");
+			}
+			else
+            {
+				rb.MoveRotation(launchRotation);
+				rb.MovePosition(launchPosition);
+            }
+		}
+
 
 		//Zero out animation to idle
 		actions.Stay ();
@@ -382,7 +678,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	void FixedUpdate()
 	{
 
-		if (!cameraScript.freeLook) {
+		if (!cameraScript.freeLook && !inAutomove) {
 			//Avatar facing direction control
 			float sensitivityScale = 1f;
 			if (Input.GetKey(KeyCode.LeftControl))
@@ -403,41 +699,41 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 
 		//Process WASD movement
-		if (Input.GetKey(KeyCode.W) && !cameraScript.freeLook) {
+		if (Input.GetKey(KeyCode.W) && !cameraScript.freeLook && !inAutomove) {
 			//actions.Walk ();
 			rb.AddForce (this.gameObject.transform.forward * moveSpeed);
 		}
 
-		if (Input.GetKey(KeyCode.S) && !cameraScript.freeLook) {
+		if (Input.GetKey(KeyCode.S) && !cameraScript.freeLook && !inAutomove) {
 			//actions.Walk ();
 			rb.AddForce (-this.gameObject.transform.forward * moveSpeed);
 		}
 
-		if (Input.GetKey(KeyCode.A) && !cameraScript.freeLook) {
+		if (Input.GetKey(KeyCode.A) && !cameraScript.freeLook && !inAutomove) {
 			//actions.Walk ();
 			rb.AddForce (-this.gameObject.transform.right * moveSpeed);
 		}
 
-		if (Input.GetKey(KeyCode.D) && !cameraScript.freeLook) {
+		if (Input.GetKey(KeyCode.D) && !cameraScript.freeLook && !inAutomove) {
 			//actions.Walk ();
 			rb.AddForce (this.gameObject.transform.right * moveSpeed);
 		}
 
 		//Enforce appropriate speed limit for running or walking
 		//TODO: Handle case of releasing shift and decelerating from a run gradually rather than instantaneously dropping to walk speed
-		if (rb.velocity.x > maxAllowedSpeed) {
+		if (rb.velocity.x > maxAllowedSpeed && !inAutomove) {
 			rb.velocity = new Vector3 (maxAllowedSpeed, rb.velocity.y, rb.velocity.z);
 		}
 
-		if (rb.velocity.x < -maxAllowedSpeed) {
+		if (rb.velocity.x < -maxAllowedSpeed && !inAutomove) {
 			rb.velocity = new Vector3 (-maxAllowedSpeed, rb.velocity.y, rb.velocity.z);
 		}
 
-		if (rb.velocity.z > maxAllowedSpeed) {
+		if (rb.velocity.z > maxAllowedSpeed && !inAutomove) {
 			rb.velocity = new Vector3 (rb.velocity.x, rb.velocity.y, maxAllowedSpeed);
 		}
 
-		if (rb.velocity.z < -maxAllowedSpeed) {
+		if (rb.velocity.z < -maxAllowedSpeed && !inAutomove) {
 			rb.velocity = new Vector3 (rb.velocity.x, rb.velocity.y, -maxAllowedSpeed);
 		}
 
