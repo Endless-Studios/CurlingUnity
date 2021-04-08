@@ -225,70 +225,72 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 	private float getWeightByKeycode(KeyCode weightKeyCode)
     {
-		Stone referenceStone = curlingStoneObject.GetComponent<Stone>();
+		Stone referenceStone = GameObject.Instantiate(curlingStoneObject.GetComponent<Stone>());
 		float[] weightTable = referenceStone.WeightTable;
+		float desiredWeight = 0f;
 
 		if (weightKeyCode == KeyCode.Alpha1)
 		{
-			return weightTable[0];
+			desiredWeight = weightTable[0];
 		}
 		if (weightKeyCode == KeyCode.Alpha2)
 		{
-			return weightTable[1];
+			desiredWeight = weightTable[1];
 		}
 		if (weightKeyCode == KeyCode.Alpha3)
 		{
-			return weightTable[2];
+			desiredWeight = weightTable[2];
 		}
 		if (weightKeyCode == KeyCode.Alpha4)
 		{
-			return weightTable[3];
+			desiredWeight = weightTable[3];
 		}
 		if (weightKeyCode == KeyCode.Alpha5)
 		{
-			return weightTable[4];
+			desiredWeight = weightTable[4];
 		}
 		if (weightKeyCode == KeyCode.Alpha6)
 		{
-			return weightTable[5];
+			desiredWeight = weightTable[5];
 		}
 		if (weightKeyCode == KeyCode.Alpha7)
 		{
-			return weightTable[6];
+			desiredWeight = weightTable[6];
 		}
 		if (weightKeyCode == KeyCode.Alpha8)
 		{
-			return weightTable[7];
+			desiredWeight = weightTable[7];
 		}
 		if (weightKeyCode == KeyCode.Alpha9)
 		{
-			return weightTable[8];
+			desiredWeight = weightTable[8];
 		}
 		if (weightKeyCode == KeyCode.Alpha0)
 		{
-			return weightTable[9];
+			desiredWeight = weightTable[9];
 		}
 		if (weightKeyCode == KeyCode.Minus)
 		{
-			return weightTable[10];
+			desiredWeight = weightTable[10];
 		}
 		if (weightKeyCode == KeyCode.H)
 		{
-			return weightTable[11];
+			desiredWeight = weightTable[11];
 		}
 		if (weightKeyCode == KeyCode.B)
 		{
-			return weightTable[12];
+			desiredWeight = weightTable[12];
 		}
 		if (weightKeyCode == KeyCode.T)
 		{
-			return weightTable[13];
+			desiredWeight = weightTable[13];
 		}
 		if (weightKeyCode == KeyCode.P)
 		{
-			return weightTable[14];
+			desiredWeight = weightTable[14];
 		}
-		return 0f;
+		GameObject.Destroy(referenceStone.gameObject);
+		return desiredWeight;
 
     }
 
@@ -305,8 +307,8 @@ public class ThirdPersonPlayerController : MonoBehaviour {
         yield return new WaitForEndOfFrame();
         while (!isWeighted)
         {
-			KeyCode returnedCode = KeyCode.None;
-			if (inRealThrow && GetWeightKeycode() != KeyCode.None)
+			KeyCode returnedCode = GetWeightKeycode();
+			if (inRealThrow && returnedCode != KeyCode.None)
             {
 				intendedWeight = getWeightByKeycode(returnedCode);
 				DisplayStatus("Intended weight is " + intendedWeight.ToString() + ". Click to set weight accuracy.");
@@ -326,6 +328,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
             if (Input.GetMouseButton(0) && inRealThrow)
             {
 				accuracyMeter.StopCursorCycle();
+				yield return new WaitForEndOfFrame();
 				weightAccuracyMultiplier = accuracyMeter.GetCursorPercentageOfTarget();
 				intendedWeight *= weightAccuracyMultiplier;
 				DisplayStatus("Weight accuracy was " + weightAccuracyMultiplier.ToString() + ". Click to set aim accuracy.");
@@ -345,6 +348,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 			if (Input.GetMouseButton(0) && inRealThrow)
 			{
 				accuracyMeter.StopCursorCycle();
+				yield return new WaitForEndOfFrame();
 				aimAccuracyMultiplier = accuracyMeter.GetCursorPercentageOfDeviationFromTarget();
 				rb.MoveRotation(CalculateDeviatedAimRotation(aimAccuracyMultiplier));
 				DisplayStatus("Aim deviation was " + aimAccuracyMultiplier.ToString() + ". Launching!");
@@ -390,6 +394,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 			stoneConjuringMode = !stoneConjuringMode;
 			summoningUI.SetActive(!summoningUI.activeSelf);
 			stoneStatsUI.SetActive(!stoneStatsUI.activeSelf);
+			rb.velocity = Vector3.zero;
             if (stoneConjuringMode)
             {
                 //Debug.Log("Conjuring set camera to hog");
@@ -443,6 +448,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
             if (Input.GetKeyDown(KeyCode.Z) && !inRealThrow)
             {
 				StopCoroutine("ProcesRealThrow");
+				inRealThrow = true;
 				StartCoroutine("ProcessRealThrow");
             }
 
@@ -608,7 +614,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 
 	void ProcessMoveAnimations()
 	{
-		if (((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) & !inAutomove) || inAutomove) {
+		if (((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) & !inAutomove) || (inAutomove & !inRealThrow)) {
 
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) {
 				actions.Run();

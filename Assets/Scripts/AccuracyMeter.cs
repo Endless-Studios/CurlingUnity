@@ -13,18 +13,32 @@ public class AccuracyMeter : MonoBehaviour
     private RectTransform meterRectTransform;
     private RectTransform cursorRectTransform;
     private RectTransform targetRectTransform;
-    private bool isActive = false;
+    private bool isCycling = false;
     private float targetValue = .8f;
+    private Vector3 positionReading = Vector3.zero;
 
     private Vector3 meterTopPosition;
     private Vector3 meterBottomPosition;
 
-    public bool IsActive
+    public bool IsCycling
     {
         get
         {
-            return isActive;
+            return isCycling;
         }
+    }
+
+    public Vector3 PositionReading
+    {
+        get
+        {
+            return positionReading;
+        }
+    }
+
+    public void Read()
+    {
+        positionReading = new Vector3(cursorRectTransform.localPosition.x, cursorRectTransform.localPosition.y, cursorRectTransform.localPosition.z);
     }
 
     public void SetTargetValue(float desiredValue)
@@ -66,7 +80,7 @@ public class AccuracyMeter : MonoBehaviour
     private void SetMeterPositions()
     {
         meterTopPosition = new Vector3(meterRectTransform.localPosition.x, meterRectTransform.localPosition.y + (meterRectTransform.sizeDelta.y / 2) - (cursorRectTransform.sizeDelta.y / 2), meterRectTransform.localPosition.z);
-        meterBottomPosition = new Vector3(meterTopPosition.x, meterTopPosition.y - meterRectTransform.sizeDelta.y + cursorRectTransform.sizeDelta.y, meterTopPosition.z);
+        meterBottomPosition = new Vector3(meterTopPosition.x, meterTopPosition.y - meterRectTransform.sizeDelta.y + (cursorRectTransform.sizeDelta.y), meterTopPosition.z);
 
     }
 
@@ -74,11 +88,15 @@ public class AccuracyMeter : MonoBehaviour
     {
         SetMeterPositions();
         StopCoroutine("CycleCursor");
+        positionReading = Vector3.zero;
+        isCycling = true;
         StartCoroutine(CycleCursor(meterBottomPosition, meterTopPosition));
     }
 
     public void StopCursorCycle()
     {
+        Read();
+        isCycling = false;
         StopCoroutine("CycleCursor");
     }
 
@@ -90,7 +108,7 @@ public class AccuracyMeter : MonoBehaviour
     public float GetCursorAbsoluteLocalHeight()
     {
         // returns the cursor's current y-axis position in local units
-        return cursorRectTransform.localPosition.y;
+        return positionReading.y;
     }
 
     public float GetCursorHeightAboveBaseline()
@@ -169,7 +187,7 @@ public class AccuracyMeter : MonoBehaviour
         Vector3 currentPosition = startPosition;
         float yDistanceTraveled = 0f;
         float yDistanceToTravel = ComputeYDelta(localStartPosition, localEndPosition);
-        while (true)
+        while (isCycling)
         {
             while (yDistanceTraveled < yDistanceToTravel)
             {
@@ -184,6 +202,8 @@ public class AccuracyMeter : MonoBehaviour
             yDistanceTraveled = 0f;
             elapsedTime = 0f;
 
-            }
         }
+        cursorRectTransform.localPosition = positionReading;
+        isCycling = false;
     }
+}

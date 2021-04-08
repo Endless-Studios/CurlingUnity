@@ -154,6 +154,7 @@ public class Stone : MonoBehaviour {
 		stoneRB.velocity = Vector3.zero;
 		directionOfRotation = rotationDirection;
 		stoneRB.AddForce (instantForce, ForceMode.VelocityChange);
+		Debug.Log("Launched stone with force " + instantForce.x.ToString() + ", " + instantForce.y.ToString() + ", " + instantForce.z.ToString());
 		StopCoroutine ("RotateStone");
 		StartCoroutine ("RotateStone");
 		StopCoroutine ("CurlStone");
