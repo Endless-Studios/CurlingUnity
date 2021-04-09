@@ -13,6 +13,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	public float percentTopSpeedCrouched = .7f;
 	public float autoTurnTime = 1f;
 	public float horizontalAimClamping = 3.814f;
+	public AnimationCurve throwWeightAccuracyCurve;
 	public Camera camera;
 	public GameObject curlingStoneObject;
 	public GameObject virtualStoneObject;
@@ -330,9 +331,9 @@ public class ThirdPersonPlayerController : MonoBehaviour {
             {
 				accuracyMeter.StopCursorCycle();
 				yield return new WaitForEndOfFrame();
-				weightAccuracyMultiplier = accuracyMeter.GetCursorPercentageOfTarget();
+				weightAccuracyMultiplier = throwWeightAccuracyCurve.Evaluate(accuracyMeter.GetCursorPercentageOfTarget());
 				intendedWeight *= weightAccuracyMultiplier;
-				DisplayStatus("Weight accuracy was " + weightAccuracyMultiplier.ToString() + ". Click to set aim accuracy.");
+                DisplayStatus("Raw weight accuracy was " + System.Math.Round(accuracyMeter.GetCursorPercentageOfTarget(), 3).ToString() + ". Adjusted weight accuracy was " + System.Math.Round(weightAccuracyMultiplier, 3).ToString() + ". Click to set aim accuracy.");
 				yield return new WaitForSeconds(1f);
 				isWeightAcc = true;
             }
