@@ -12,6 +12,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	public float highSensitivityScalingFactor = .5f;
 	public float percentTopSpeedCrouched = .7f;
 	public float autoTurnTime = 1f;
+	public float horizontalAimClamping = 3.814f;
 	public Camera camera;
 	public GameObject curlingStoneObject;
 	public GameObject virtualStoneObject;
@@ -343,14 +344,15 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		accuracyMeter.StartCursorCycle();
 		float aimAccuracyMultiplier = 0f;
 		yield return new WaitForEndOfFrame();
-        while (!isAimAcc)
+		Quaternion deviatedAim = new Quaternion();
+		while (!isAimAcc)
         {
 			if (Input.GetMouseButton(0) && inRealThrow)
 			{
 				accuracyMeter.StopCursorCycle();
 				yield return new WaitForEndOfFrame();
 				aimAccuracyMultiplier = accuracyMeter.GetCursorPercentageOfDeviationFromTarget();
-				rb.MoveRotation(CalculateDeviatedAimRotation(aimAccuracyMultiplier));
+				deviatedAim = CalculateDeviatedAimRotation(aimAccuracyMultiplier);
 				DisplayStatus("Aim deviation was " + aimAccuracyMultiplier.ToString() + ". Launching!");
 				yield return new WaitForSeconds(1f);
 				isAimAcc = true;
@@ -360,7 +362,8 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 				yield return new WaitForEndOfFrame();
 			}
 		}
-		LaunchStoneByRawWeight(intendedWeight);
+		Vector3 deviatedLaunchVector = deviatedAim * this.transform.forward;
+		LaunchStoneByRawWeight(intendedWeight, deviatedLaunchVector);
 		crouched = false;
 		inAutomove = false;
 		inRealThrow = false;
@@ -369,20 +372,18 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	private Quaternion CalculateDeviatedAimRotation(float aimDeviation)
     {
 		Quaternion currentAim = this.transform.rotation;
-		float deflectionValue = currentAim.eulerAngles.y * aimDeviation;
-		//for debugging
-		deflectionValue = 0f;
+		aimDeviation *= horizontalAimClamping;
 		Quaternion newAim = new Quaternion();
-		newAim = Quaternion.Euler(currentAim.eulerAngles.x, currentAim.eulerAngles.y + deflectionValue, currentAim.eulerAngles.z);
+		newAim = Quaternion.Euler(0, aimDeviation, 0);
 		return newAim;
     }
 
-	private void LaunchStoneByRawWeight(float rawLaunchWeight)
+	private void LaunchStoneByRawWeight(float rawLaunchWeight, Vector3 launchDirection)
     {
 		GameObject droppedStone = DropStone();
 		droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
 		statsDisplayer.TrackStone(droppedStone);
-		droppedStone.GetComponent<Stone>().Launch(rawLaunchWeight, this.transform.forward, spinDirection);
+		droppedStone.GetComponent<Stone>().Launch(rawLaunchWeight, launchDirection, spinDirection);
 		StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
 		StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
 	}
