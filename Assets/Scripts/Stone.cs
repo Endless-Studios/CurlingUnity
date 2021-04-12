@@ -15,8 +15,10 @@ public class Stone : MonoBehaviour {
 	public float freezeMotionVelocity = .1f;
 	public AnimationCurve CurlRatio;
 	public AnimationCurve[] CurlRatios;
+	public float maxSweepDeltaV = .68f;
+	public float fullSweepDistance = 28.3464f; // initially setting at distance from hog to tee
+	public bool isSwept = false;
 	private int directionOfRotation = 1;
-
 	private Rigidbody stoneRB;
 	private float[] weightTable;
 	private int minRotations = 2;
@@ -27,6 +29,7 @@ public class Stone : MonoBehaviour {
 	private GameObject targetRing;
 	private Vector3 launchPosition;
 	private Vector3 launchForce;
+	private float sweepRate = 1f;
 
 	public float InstantaneousVelocity
     {
@@ -62,6 +65,18 @@ public class Stone : MonoBehaviour {
         }
     }
 
+	public float SweepRate
+    {
+		get
+        {
+			return sweepRate;
+        }
+
+		set
+        {
+			sweepRate = value;
+        }
+    }
 	public float[] WeightTable
     {
         get 
@@ -157,6 +172,8 @@ public class Stone : MonoBehaviour {
 		Debug.Log("Launched stone with force " + instantForce.x.ToString() + ", " + instantForce.y.ToString() + ", " + instantForce.z.ToString());
 		StopCoroutine ("RotateStone");
 		StartCoroutine ("RotateStone");
+		StopCoroutine("SweepStone");
+		StartCoroutine("SweepStone");
 		StopCoroutine ("CurlStone");
 		StartCoroutine ("CurlStone");
 	}
@@ -260,4 +277,23 @@ public class Stone : MonoBehaviour {
 		} while (stoneIsMoving());
 	}
 		
+	IEnumerator SweepStone()
+    {
+		float deltaVZ = 0f;
+		Vector3 sweepAcceleration;
+		yield return new WaitForSeconds(freezeMotionAfterSeconds);
+		do
+		{
+			if (isSwept)
+			{
+				deltaVZ = Time.deltaTime * (maxSweepDeltaV / fullSweepDistance);
+				//here for debugging
+				deltaVZ /= 3;
+				sweepAcceleration = new Vector3(0f, 0f, -deltaVZ);
+				stoneRB.AddForce(sweepAcceleration, ForceMode.VelocityChange);
+			}
+			yield return new WaitForEndOfFrame();
+		}
+		while (stoneIsMoving());
+    }
 }

@@ -13,6 +13,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	public float percentTopSpeedCrouched = .7f;
 	public float autoTurnTime = 1f;
 	public float horizontalAimClamping = 3.814f;
+	public float fullSweepCPS = 6f;
 	public AnimationCurve throwWeightAccuracyCurve;
 	public Camera camera;
 	public GameObject curlingStoneObject;
@@ -45,6 +46,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 	private bool inRealThrow = false;
 	private UnityEngine.UI.Text statusDisplay;
 	private List<KeyCode> weightKeyCodes;
+	private float sweepRate = 0f;
 
 	// Use this for initialization
 	void Start () {
@@ -541,9 +543,13 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 					GameObject droppedStone = DropStone();
 					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
 					statsDisplayer.TrackStone(droppedStone);
+					//here for debugging
+					//droppedStone.GetComponent<Stone>().isSwept = true;
 					droppedStone.GetComponent<Stone>().Launch(8, this.gameObject.transform.forward, spinDirection);
 					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
 					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
+					StopCoroutine("TrackSweepRate");
+					StartCoroutine("TrackSweepRate");
 				}
 
 				if (Input.GetKeyDown(KeyCode.Alpha0))
@@ -761,4 +767,38 @@ public class ThirdPersonPlayerController : MonoBehaviour {
         }
     }
 
+	private IEnumerator TrackSweepRate()
+    {
+		float t1 = 0f;
+		float t2 = 0f;
+		Stone activeStone = statsDisplayer.stoneObject.GetComponent<Stone>();
+        while (statsDisplayer.stoneObject != null)
+        {
+            if (Input.GetMouseButton(0))
+            {
+				if (t2 == 0f)
+				{
+					if (t1 == 0f)
+					{
+						t1 = Time.time;
+					}
+					else
+					{
+						t2 = Time.time;
+						sweepRate = Mathf.Clamp(1 / (t2 - t1), 0f, fullSweepCPS);
+						DisplayStatus("Sweep click rate is " + System.Math.Round(sweepRate, 2).ToString());
+						activeStone.SweepRate = sweepRate / fullSweepCPS;
+						activeStone.isSwept = true;
+						t1 = 0f;
+						t2 = 0f;
+					}
+				}
+			}
+			else
+            {
+				activeStone.isSwept = false;
+            }
+			yield return new WaitForEndOfFrame();
+		}
+	}
 }
