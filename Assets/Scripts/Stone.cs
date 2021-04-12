@@ -16,7 +16,7 @@ public class Stone : MonoBehaviour {
 	public AnimationCurve CurlRatio;
 	public AnimationCurve[] CurlRatios;
 	public float maxSweepDeltaV = .68f;
-	public float fullSweepDistance = 28.3464f; // initially setting at distance from hog to tee
+	public float fullSweepDistance = 28.3464f;
 	public bool isSwept = false;
 	private int directionOfRotation = 1;
 	private Rigidbody stoneRB;

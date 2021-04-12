@@ -543,8 +543,6 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 					GameObject droppedStone = DropStone();
 					droppedStone.GetComponent<Stone>().SetStoneColor(nextStoneColor);
 					statsDisplayer.TrackStone(droppedStone);
-					//here for debugging
-					//droppedStone.GetComponent<Stone>().isSwept = true;
 					droppedStone.GetComponent<Stone>().Launch(8, this.gameObject.transform.forward, spinDirection);
 					StopCoroutine(stoneCam.InitiateFollowCam(droppedStone));
 					StartCoroutine(stoneCam.InitiateFollowCam(droppedStone));
@@ -771,6 +769,10 @@ public class ThirdPersonPlayerController : MonoBehaviour {
     {
 		float t1 = 0f;
 		float t2 = 0f;
+		float strokeDuration = 0f;
+		bool applySweep = false;
+		float applicationTimer = 0f;
+		bool awaitingRelease = false;
 		Stone activeStone = statsDisplayer.stoneObject.GetComponent<Stone>();
         while (statsDisplayer.stoneObject != null)
         {
@@ -781,24 +783,43 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 					if (t1 == 0f)
 					{
 						t1 = Time.time;
+						awaitingRelease = true;
 					}
 					else
 					{
-						t2 = Time.time;
-						sweepRate = Mathf.Clamp(1 / (t2 - t1), 0f, fullSweepCPS);
-						DisplayStatus("Sweep click rate is " + System.Math.Round(sweepRate, 2).ToString());
-						activeStone.SweepRate = sweepRate / fullSweepCPS;
-						activeStone.isSwept = true;
-						t1 = 0f;
-						t2 = 0f;
+						if (!awaitingRelease)
+						{
+							t2 = Time.time;
+							strokeDuration = t2 - t1;
+							sweepRate = Mathf.Clamp(1 / strokeDuration, 0f, fullSweepCPS);
+							DisplayStatus("Sweep click rate is " + System.Math.Round(sweepRate, 2).ToString());
+							activeStone.SweepRate = sweepRate / fullSweepCPS;
+							applySweep = true;
+							t1 = 0f;
+							t2 = 0f;
+						}
 					}
 				}
 			}
-			else
+            if (applySweep)
             {
-				activeStone.isSwept = false;
+				applicationTimer += Time.deltaTime;
+                if (applicationTimer <= strokeDuration)
+                {
+					activeStone.isSwept = true;
+                }
+				else
+                {
+					activeStone.isSwept = false;
+					applicationTimer = 0f;
+					applySweep = false;
+                }
             }
-			yield return new WaitForEndOfFrame();
+			yield return null;
+            if (Input.GetMouseButtonUp(0))
+            {
+				awaitingRelease = false;
+            }
 		}
 	}
 }
