@@ -333,9 +333,10 @@ public class ThirdPersonPlayerController : MonoBehaviour {
             {
 				accuracyMeter.StopCursorCycle();
 				yield return new WaitForEndOfFrame();
-				weightAccuracyMultiplier = throwWeightAccuracyCurve.Evaluate(accuracyMeter.GetCursorPercentageOfTarget());
+				float cursorAccuracy = accuracyMeter.GetCursorPercentageOfTarget();
+				weightAccuracyMultiplier = throwWeightAccuracyCurve.Evaluate(cursorAccuracy);
 				intendedWeight *= weightAccuracyMultiplier;
-                DisplayStatus("Raw weight accuracy was " + System.Math.Round(accuracyMeter.GetCursorPercentageOfTarget(), 3).ToString() + ". Adjusted weight accuracy was " + System.Math.Round(weightAccuracyMultiplier, 3).ToString() + ". Click to set aim accuracy.");
+                DisplayStatus("Raw weight accuracy was " + System.Math.Round(cursorAccuracy, 2).ToString() + ". Adjusted weight accuracy was " + System.Math.Round(weightAccuracyMultiplier, 3).ToString() + ". Click to set aim accuracy.");
 				yield return new WaitForSeconds(1f);
 				isWeightAcc = true;
             }
@@ -367,7 +368,6 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 		}
 		Vector3 deviatedLaunchVector = deviatedAim * this.transform.forward;
 		LaunchStoneByRawWeight(intendedWeight, deviatedLaunchVector);
-		crouched = false;
 		inAutomove = false;
 		inRealThrow = false;
     }
@@ -650,7 +650,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
         }
 
 		//Handle crouching
-		if (Input.GetKeyDown(KeyCode.C) && !cameraScript.freeLook && !stoneConjuringMode && !inAutomove) {
+		if (Input.GetKeyDown(KeyCode.C) && !cameraScript.freeLook && !inAutomove) {
 			actions.Sitting ();
 			crouched = !crouched;
 			crouchUI.SetActive(!crouchUI.activeSelf);
