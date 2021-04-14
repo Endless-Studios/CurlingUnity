@@ -323,6 +323,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 				yield return new WaitForEndOfFrame();
             }
         }
+		accuracyMeter.Show();
 		accuracyMeter.SetTargetValue(.5f);
 		accuracyMeter.StartCursorCycle();
 		float weightAccuracyMultiplier = 1f;
@@ -366,6 +367,7 @@ public class ThirdPersonPlayerController : MonoBehaviour {
 				yield return new WaitForEndOfFrame();
 			}
 		}
+		accuracyMeter.FadeOutOverSeconds(.5f, 1.5f);
 		Vector3 deviatedLaunchVector = deviatedAim * this.transform.forward;
 		LaunchStoneByRawWeight(intendedWeight, deviatedLaunchVector);
 		inAutomove = false;

@@ -5,7 +5,9 @@ using UnityEngine;
 public class AccuracyMeter : MonoBehaviour
 {
 
-    public float scrollSpeed = 5f;
+    public float scrollSpeed = 1f;
+    public float speedMultiplerPerCycle = 1f;
+    public float baselineSpeedCap = .5f;
 
     private GameObject meterObject;
     private GameObject cursorObject;
@@ -16,7 +18,8 @@ public class AccuracyMeter : MonoBehaviour
     private bool isCycling = false;
     private float targetValue = .8f;
     private Vector3 positionReading = Vector3.zero;
-
+    private CanvasGroup parentCanvasGroup;
+    private float scrollSpeedCap;
     private Vector3 meterTopPosition;
     private Vector3 meterBottomPosition;
 
@@ -59,8 +62,11 @@ public class AccuracyMeter : MonoBehaviour
         meterRectTransform = meterObject.GetComponent<RectTransform>();
         cursorRectTransform = cursorObject.GetComponent<RectTransform>();
         targetRectTransform = targetObject.GetComponent<RectTransform>();
+        parentCanvasGroup = this.gameObject.GetComponent<CanvasGroup>();
+        scrollSpeedCap = scrollSpeed * baselineSpeedCap;
         SetTargetValue(.8f);
         SetMeterPositions();
+        Hide();
 
         //For debugging
         //StartCursorCycle()
@@ -180,6 +186,7 @@ public class AccuracyMeter : MonoBehaviour
 
     private IEnumerator CycleCursor(Vector3 startPosition, Vector3 endPosition)
     {
+        float currentScrollSpeed = scrollSpeed;
         cursorRectTransform.localPosition = startPosition;
         Vector3 localStartPosition = startPosition;
         Vector3 localEndPosition = endPosition;
@@ -192,18 +199,65 @@ public class AccuracyMeter : MonoBehaviour
             while (yDistanceTraveled < yDistanceToTravel)
             {
                 elapsedTime += Time.deltaTime;
-                currentPosition = Vector3.Lerp(localStartPosition, localEndPosition, elapsedTime / scrollSpeed);
+                currentPosition = Vector3.Lerp(localStartPosition, localEndPosition, elapsedTime / currentScrollSpeed);
                 cursorRectTransform.localPosition = currentPosition;
                 yDistanceTraveled = ComputeYDelta(localStartPosition, currentPosition);
                 yield return new WaitForEndOfFrame();
             }
             localEndPosition = localStartPosition;
             localStartPosition = currentPosition;
+            currentScrollSpeed = Mathf.Clamp(currentScrollSpeed * speedMultiplerPerCycle, scrollSpeedCap, currentScrollSpeed);
             yDistanceTraveled = 0f;
             elapsedTime = 0f;
 
         }
         cursorRectTransform.localPosition = positionReading;
         isCycling = false;
+    }
+
+    public void Show()
+    {
+        parentCanvasGroup.alpha = 1f;
+        parentCanvasGroup.blocksRaycasts = true;
+    }
+
+    public void Hide()
+    {
+        parentCanvasGroup.alpha = 0f;
+        parentCanvasGroup.blocksRaycasts = false;
+    }
+
+    public void HideAfter(float secondsToWait)
+    {
+        StopCoroutine("WaitAndThenHide");
+        StartCoroutine(WaitAndThenHide(secondsToWait));
+    }
+
+    public void FadeOutOverSeconds(float secondsToFadeOver, float startDelay = 0f)
+    {
+        StopCoroutine("HideOverTime");
+        StartCoroutine(HideOverTime(secondsToFadeOver, startDelay));
+    }
+
+    IEnumerator WaitAndThenHide(float waitForSeconds)
+    {
+        yield return new WaitForSeconds(waitForSeconds);
+        Hide();
+    }
+
+    IEnumerator HideOverTime(float fadeDuration, float waitSecondsFirst = 0f)
+    {
+        if (waitSecondsFirst > 0f)
+        {
+            yield return new WaitForSeconds(waitSecondsFirst);
+        }
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            parentCanvasGroup.alpha = 1 - (elapsedTime / fadeDuration);
+            yield return new WaitForEndOfFrame();
+        }
+        Hide();
     }
 }

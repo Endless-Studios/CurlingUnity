@@ -1048,6 +1048,7 @@ GameObject:
   m_Component:
   - component: {fileID: 470809846}
   - component: {fileID: 470809847}
+  - component: {fileID: 470809848}
   m_Layer: 0
   m_Name: AccuracyMeter
   m_TagString: AccuracyMeter
@@ -1090,6 +1091,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scrollSpeed: 1
+  speedMultiplerPerCycle: 0.95
+  baselineSpeedCap: 0.5
+--- !u!225 &470809848
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 470809845}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &476304393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1369,7 +1384,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -180}
-  m_SizeDelta: {x: 400, y: 370}
+  m_SizeDelta: {x: 400, y: 380}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &509554239
 MonoBehaviour:
@@ -1767,7 +1782,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -550}
+  m_AnchoredPosition: {x: -300, y: -30}
   m_SizeDelta: {x: 400, y: 300}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &731527701
@@ -3747,7 +3762,7 @@ MonoBehaviour:
   percentTopSpeedCrouched: 0.7
   autoTurnTime: 1
   horizontalAimClamping: 3.814
-  fullSweepCPS: 6
+  fullSweepCPS: 7
   throwWeightAccuracyCurve:
     serializedVersion: 2
     m_Curve:
